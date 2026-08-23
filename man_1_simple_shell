@@ -7,8 +7,18 @@ simple_shell - a simple UNIX command interpreter
 .B ./simple_shell
 
 .SH DESCRIPTION
-simple_shell reads commands from the user and executes them.
-
+simple_shell reads one command per line and executes it using fork and execve.
+.PP
+Only a full path (absolute or relative) to an executable is supported;
+the shell does not search PATH yet.
+.PP
+Each command line must be a single word; arguments are not supported.
+.PP
+No special characters are handled: " ' ` \\ * & #
+.PP
+If the executable is not found, an error message is printed and the
+prompt is shown again.
+.PP
 It works in interactive and non-interactive mode.
 
 .SH USAGE
@@ -18,14 +28,13 @@ Run the shell with:
 $ ./simple_shell
 .fi
 
-.SH BUILTINS
-The shell supports built-in commands.
+.SH BUILTIN COMMANDS
+No built-in commands are implemented at this stage.
 
 .SH EOF
-Ctrl-D ends the shell.
+Ctrl-D (EOF) exits the shell cleanly.
 
 .SH AUTHORS
 Noor Abdullah Albadr
 .br
 Yasser Badr Alrashed
-
