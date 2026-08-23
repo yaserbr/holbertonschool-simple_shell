@@ -1,0 +1,31 @@
+.TH SIMPLE_SHELL 1 "" "Simple Shell" "User Commands"
+
+.SH NAME
+simple_shell - a simple UNIX command interpreter
+
+.SH SYNOPSIS
+.B ./simple_shell
+
+.SH DESCRIPTION
+simple_shell reads commands from the user and executes them.
+
+It works in interactive and non-interactive mode.
+
+.SH USAGE
+Run the shell with:
+
+.nf
+$ ./simple_shell
+.fi
+
+.SH BUILTINS
+The shell supports built-in commands.
+
+.SH EOF
+Ctrl-D ends the shell.
+
+.SH AUTHORS
+Noor Abdullah Albadr
+.br
+Yasser Badr Alrashed
+
