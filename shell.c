@@ -40,20 +40,55 @@ char *read_line(void)
 }
 
 /**
- * execute_command - forks a child process and executes a command
- * @line: the command line to run, may include arguments
- * @prog_name: the shell's own program name, used for error messages
- *
- * Description: splits the line into a command and its arguments,
- * then forks a child process to run it with execve. The parent
- * waits for the child to finish before returning to the main loop.
- * A line with no tokens (blank or whitespace-only) is a no-op.
+ * execute_child - executes a command in the child process
+ * @argv: command and arguments
+ * @path: full path of the command
+ * @prog_name: name of the shell
  */
-void execute_command(char *line, char *prog_name)
+void execute_child(char **argv, char *path, char *prog_name)
+{
+	if (execve(path, argv, environ) == -1)
+	{
+		perror(prog_name);
+		_exit(127);
+	}
+}
+
+/**
+ * run_command - creates a child and runs a command
+ * @argv: command and arguments
+ * @path: full path of the command
+ * @prog_name: name of the shell
+ *
+ * Return: nothing
+ */
+void run_command(char **argv, char *path, char *prog_name)
 {
 	pid_t child_pid;
 	int status;
+
+	child_pid = fork();
+	if (child_pid == -1)
+	{
+		perror(prog_name);
+		return;
+	}
+
+	if (child_pid == 0)
+		execute_child(argv, path, prog_name);
+	else
+		waitpid(child_pid, &status, 0);
+}
+
+/**
+ * execute_command - creates a child and executes a command
+ * @line: command line
+ * @prog_name: name of the shell
+ */
+void execute_command(char *line, char *prog_name)
+{
 	char **argv;
+	char *path;
 
 	argv = split_line(line);
 	if (argv == NULL || argv[0] == NULL)
@@ -62,26 +97,20 @@ void execute_command(char *line, char *prog_name)
 		return;
 	}
 
-	child_pid = fork();
-	if (child_pid == -1)
+	if (handle_builtin(argv))
+		return;
+
+	path = find_command(argv[0]);
+	if (path == NULL)
 	{
-		perror(prog_name);
+		fprintf(stderr, "%s: %s: not found\n", prog_name, argv[0]);
 		free(argv);
 		return;
 	}
 
-	if (child_pid == 0)
-	{
-		if (execve(argv[0], argv, environ) == -1)
-		{
-			perror(prog_name);
-			_exit(127);
-		}
-	}
-	else
-	{
-		waitpid(child_pid, &status, 0);
-	}
+	run_command(argv, path, prog_name);
 
+	free(path);
 	free(argv);
 }
+
