@@ -14,6 +14,7 @@ extern char **environ;
 
 void print_prompt(void);
 char *read_line(void);
+void trim_line(char *line);
 void execute_command(char *line, char *prog_name);
 
 #endif /* SHELL_H */

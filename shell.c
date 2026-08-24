@@ -15,8 +15,9 @@ void print_prompt(void)
 /**
  * read_line - reads one line of input from standard input
  *
- * Description: uses getline to read an entire line, then strips the
- * trailing newline so the result can be used directly as a command.
+ * Description: uses getline to read an entire line, strips the
+ * trailing newline, and trims surrounding whitespace so the result
+ * can be used directly as a command.
  *
  * Return: a pointer to the line read, or NULL on end of file (Ctrl+D)
  */
@@ -36,7 +37,33 @@ char *read_line(void)
 	if (nread > 0 && line[nread - 1] == '\n')
 		line[nread - 1] = '\0';
 
+	trim_line(line);
+
 	return (line);
+}
+
+/**
+ * trim_line - removes leading and trailing whitespace from a string
+ * @line: the string to trim, modified in place
+ *
+ * Description: shifts the string left past any leading spaces or
+ * tabs, then cuts off trailing spaces or tabs, so a line such as
+ * "  /bin/ls  " becomes "/bin/ls".
+ */
+void trim_line(char *line)
+{
+	size_t start = 0;
+	size_t end;
+
+	while (line[start] == ' ' || line[start] == '\t')
+		start++;
+
+	end = strlen(line);
+	while (end > start && (line[end - 1] == ' ' || line[end - 1] == '\t'))
+		end--;
+
+	memmove(line, line + start, end - start);
+	line[end - start] = '\0';
 }
 
 /**
