@@ -3,17 +3,15 @@
 /**
  * main - entry point of the simple shell
  * @argc: argument count (unused)
- * @argv: argument vector, argv[0] is the shell's own program name
+ * @argv: argument vector
  *
- * Description: reads one command per line in a loop, forks a child
- * process to execute it, and waits for the child to finish before
- * looping back. Exits on end-of-file (Ctrl+D).
- *
- * Return: 0 on success
+ * Return: exit status of the shell
  */
 int main(int argc, char **argv)
 {
 	char *line;
+	int line_number = 0;
+	int status = 0;
 
 	(void)argc;
 
@@ -23,17 +21,15 @@ int main(int argc, char **argv)
 		line = read_line();
 
 		if (line == NULL)
-		{
-			if (isatty(STDIN_FILENO))
-				write(STDOUT_FILENO, "\n", 1);
 			break;
-		}
+
+		line_number++;
 
 		if (line[0] != '\0')
-			execute_command(line, argv[0]);
+			status = execute_command(line, argv[0], line_number);
 
 		free(line);
 	}
 
-	return (0);
+	return (status);
 }

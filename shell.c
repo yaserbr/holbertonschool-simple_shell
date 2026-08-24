@@ -62,55 +62,69 @@ void execute_child(char **argv, char *path, char *prog_name)
  *
  * Return: nothing
  */
-void run_command(char **argv, char *path, char *prog_name)
+int run_command(char **argv, char *path, char *prog_name)
 {
 	pid_t child_pid;
 	int status;
 
 	child_pid = fork();
+
 	if (child_pid == -1)
 	{
 		perror(prog_name);
-		return;
+		return (1);
 	}
 
 	if (child_pid == 0)
 		execute_child(argv, path, prog_name);
-	else
-		waitpid(child_pid, &status, 0);
-}
 
+	waitpid(child_pid, &status, 0);
+
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+
+	return (1);
+}
 /**
  * execute_command - creates a child and executes a command
  * @line: command line
  * @prog_name: name of the shell
+ * @line_number: number of the command line
+ *
+ * Return: exit status of the command
  */
-void execute_command(char *line, char *prog_name)
+int execute_command(char *line, char *prog_name, int line_number)
 {
 	char **argv;
 	char *path;
+	int status;
 
 	argv = split_line(line);
 	if (argv == NULL || argv[0] == NULL)
 	{
 		free(argv);
-		return;
+		return (0);
 	}
 
 	if (handle_builtin(argv))
-		return;
+	{
+		free(argv);
+		return (0);
+	}
 
 	path = find_command(argv[0]);
 	if (path == NULL)
 	{
-		fprintf(stderr, "%s: %s: not found\n", prog_name, argv[0]);
+		fprintf(stderr, "%s: %d: %s: not found\n",
+			prog_name, line_number, argv[0]);
 		free(argv);
-		return;
+		return (127);
 	}
 
-	run_command(argv, path, prog_name);
+	status = run_command(argv, path, prog_name);
 
 	free(path);
 	free(argv);
-}
 
+	return (status);
+}

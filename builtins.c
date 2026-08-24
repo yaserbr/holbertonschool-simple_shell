@@ -24,7 +24,6 @@ int handle_builtin(char **argv)
 			printf("%s\n", *env);
 			env++;
 		}
-		free(argv);
 		return (1);
 	}
 
