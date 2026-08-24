@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 
 #define PROMPT "($) "
+#define EXIT_SHELL -1
 
 extern char **environ;
 

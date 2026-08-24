@@ -98,6 +98,7 @@ int execute_command(char *line, char *prog_name, int line_number)
 	char **argv;
 	char *path;
 	int status;
+	int builtin;
 
 	argv = split_line(line);
 	if (argv == NULL || argv[0] == NULL)
@@ -106,7 +107,15 @@ int execute_command(char *line, char *prog_name, int line_number)
 		return (0);
 	}
 
-	if (handle_builtin(argv))
+	builtin = handle_builtin(argv);
+
+	if (builtin == 1)
+	{
+		free(argv);
+		return (EXIT_SHELL);
+	}
+
+	if (builtin == 2)
 	{
 		free(argv);
 		return (0);

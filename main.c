@@ -5,7 +5,7 @@
  * @argc: argument count (unused)
  * @argv: argument vector
  *
- * Return: exit status of the shell
+ * Return: 0 on success
  */
 int main(int argc, char **argv)
 {
@@ -26,7 +26,15 @@ int main(int argc, char **argv)
 		line_number++;
 
 		if (line[0] != '\0')
+		{
 			status = execute_command(line, argv[0], line_number);
+
+			if (status == EXIT_SHELL)
+			{
+				free(line);
+				return (0);
+			}
+		}
 
 		free(line);
 	}
