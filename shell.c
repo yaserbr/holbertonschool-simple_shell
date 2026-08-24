@@ -15,9 +15,8 @@ void print_prompt(void)
 /**
  * read_line - reads one line of input from standard input
  *
- * Description: uses getline to read an entire line, strips the
- * trailing newline, and trims surrounding whitespace so the result
- * can be used directly as a command.
+ * Description: uses getline to read an entire line, then strips the
+ * trailing newline so the result can be split into command tokens.
  *
  * Return: a pointer to the line read, or NULL on end of file (Ctrl+D)
  */
@@ -37,64 +36,43 @@ char *read_line(void)
 	if (nread > 0 && line[nread - 1] == '\n')
 		line[nread - 1] = '\0';
 
-	trim_line(line);
-
 	return (line);
 }
 
 /**
- * trim_line - removes leading and trailing whitespace from a string
- * @line: the string to trim, modified in place
- *
- * Description: shifts the string left past any leading spaces or
- * tabs, then cuts off trailing spaces or tabs, so a line such as
- * "  /bin/ls  " becomes "/bin/ls".
- */
-void trim_line(char *line)
-{
-	size_t start = 0;
-	size_t end;
-
-	while (line[start] == ' ' || line[start] == '\t')
-		start++;
-
-	end = strlen(line);
-	while (end > start && (line[end - 1] == ' ' || line[end - 1] == '\t'))
-		end--;
-
-	memmove(line, line + start, end - start);
-	line[end - start] = '\0';
-}
-
-/**
  * execute_command - forks a child process and executes a command
- * @line: the command to run (a single word, no arguments)
+ * @line: the command line to run, may include arguments
  * @prog_name: the shell's own program name, used for error messages
  *
- * Description: the parent process waits for the child to finish
- * before returning control to the main loop. If the command cannot
- * be executed, an error is printed and the child exits without
- * affecting the parent shell.
+ * Description: splits the line into a command and its arguments,
+ * then forks a child process to run it with execve. The parent
+ * waits for the child to finish before returning to the main loop.
+ * A line with no tokens (blank or whitespace-only) is a no-op.
  */
 void execute_command(char *line, char *prog_name)
 {
 	pid_t child_pid;
 	int status;
-	char *argv[2];
+	char **argv;
 
-	argv[0] = line;
-	argv[1] = NULL;
+	argv = split_line(line);
+	if (argv == NULL || argv[0] == NULL)
+	{
+		free(argv);
+		return;
+	}
 
 	child_pid = fork();
 	if (child_pid == -1)
 	{
 		perror(prog_name);
+		free(argv);
 		return;
 	}
 
 	if (child_pid == 0)
 	{
-		if (execve(line, argv, environ) == -1)
+		if (execve(argv[0], argv, environ) == -1)
 		{
 			perror(prog_name);
 			_exit(127);
@@ -104,4 +82,6 @@ void execute_command(char *line, char *prog_name)
 	{
 		waitpid(child_pid, &status, 0);
 	}
+
+	free(argv);
 }
