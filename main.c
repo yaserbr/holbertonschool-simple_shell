@@ -5,13 +5,14 @@
  * @argc: argument count (unused)
  * @argv: argument vector
  *
- * Return: 0 on success
+ * Return: exit status
  */
 int main(int argc, char **argv)
 {
 	char *line;
 	int line_number = 0;
 	int status = 0;
+	int command_status;
 
 	(void)argc;
 
@@ -27,13 +28,15 @@ int main(int argc, char **argv)
 
 		if (line[0] != '\0')
 		{
-			status = execute_command(line, argv[0], line_number);
+			command_status = execute_command(line, argv[0], line_number);
 
-			if (status == EXIT_SHELL)
+			if (command_status == EXIT_SHELL)
 			{
 				free(line);
-				return (0);
+				break;
 			}
+
+			status = command_status;
 		}
 
 		free(line);

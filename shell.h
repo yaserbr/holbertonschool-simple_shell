@@ -25,5 +25,6 @@ void execute_child(char **argv, char *path, char *prog_name);
 
 int run_command(char **argv, char *path, char *prog_name);
 int handle_builtin(char **argv);
+int command_error(char *prog_name, int line_number, char *command);
 
 #endif /* SHELL_H */

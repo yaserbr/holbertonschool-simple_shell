@@ -60,7 +60,7 @@ void execute_child(char **argv, char *path, char *prog_name)
  * @path: full path of the command
  * @prog_name: name of the shell
  *
- * Return: nothing
+ * Return: exit status of the command
  */
 int run_command(char **argv, char *path, char *prog_name)
 {
@@ -78,10 +78,17 @@ int run_command(char **argv, char *path, char *prog_name)
 	if (child_pid == 0)
 		execute_child(argv, path, prog_name);
 
-	waitpid(child_pid, &status, 0);
+	if (waitpid(child_pid, &status, 0) == -1)
+	{
+		perror(prog_name);
+		return (1);
+	}
 
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
+
+	if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
 
 	return (1);
 }
@@ -124,10 +131,9 @@ int execute_command(char *line, char *prog_name, int line_number)
 	path = find_command(argv[0]);
 	if (path == NULL)
 	{
-		fprintf(stderr, "%s: %d: %s: not found\n",
-			prog_name, line_number, argv[0]);
+		status = command_error(prog_name, line_number, argv[0]);
 		free(argv);
-		return (127);
+		return (status);
 	}
 
 	status = run_command(argv, path, prog_name);

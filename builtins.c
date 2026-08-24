@@ -26,3 +26,18 @@ int handle_builtin(char **argv)
 
 	return (0);
 }
+
+/**
+ * command_error - prints an error for an unknown command
+ * @prog_name: shell name
+ * @line_number: command line number
+ * @command: command name
+ *
+ * Return: 127
+ */
+int command_error(char *prog_name, int line_number, char *command)
+{
+	fprintf(stderr, "%s: %d: %s: not found\n",
+		prog_name, line_number, command);
+	return (127);
+}
